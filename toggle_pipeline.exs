@@ -1,5 +1,5 @@
-defmodule PipelineToggle do
-  def pipeline_toggle(term) when is_binary(term) do
+defmodule TogglePipeline do
+  def toggle_pipeline(term) when is_binary(term) do
     try do
       ast = Code.string_to_quoted!(term)
 

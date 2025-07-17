@@ -1,13 +1,13 @@
-defmodule MultiAliasSplitter do
+defmodule SplitAliases do
   @moduledoc """
   Splits multi-alias curly brace notation into single-line aliases.
 
   ## Examples
-  iex> multi_alias_splitter("alias Arcadia.Plug.Data.{Account, BillingStatement, Meter, Site}")
+  iex> split_aliases("alias Arcadia.Plug.Data.{Account, BillingStatement, Meter, Site}")
   {:ok, "alias Arcadia.Plug.Data.Account\nalias Arcadia.Plug.Data.BillingStatement\nalias Arcadia.Plug.Data.Meter\nalias Arcadia.Plug.Data.Site"}
   """
 
-  def multi_alias_splitter(string) when is_binary(string) do
+  def split_aliases(string) when is_binary(string) do
     case Code.string_to_quoted(string) do
       {:ok, ast} ->
         split_ast(ast)
@@ -22,8 +22,8 @@ defmodule MultiAliasSplitter do
   end
 
   defp alias_node_to_string({:alias, _, [{:__aliases__, _, modules}]}) when is_list(modules) do
-  "alias " <> Enum.map_join(modules, ".", &to_string/1)
-end
+    "alias " <> Enum.map_join(modules, ".", &to_string/1)
+  end
 
   defp extract_aliases({:__block__, _, nodes}) do
     Enum.flat_map(nodes, &extract_aliases/1)
@@ -38,15 +38,19 @@ end
   end
 
   # Handles {:alias, meta, [dot_tuple_call]}
-  defp split_ast({:alias, meta,
-         [
-           {{:., _, [prefix_ast, :{}]}, _, inner_modules}
-         ]} = ast) do
+  defp split_ast(
+         {:alias, meta,
+          [
+            {{:., _, [prefix_ast, :{}]}, _, inner_modules}
+          ]} = ast
+       ) do
     prefix = extract_prefix(prefix_ast)
+
     aliases =
       Enum.map(inner_modules, fn {:__aliases__, m, mod} ->
         {:alias, meta, [{:__aliases__, m, prefix ++ mod}]}
       end)
+
     {:__block__, [], aliases}
   end
 
