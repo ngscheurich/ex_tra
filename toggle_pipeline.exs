@@ -97,9 +97,10 @@ defmodule TogglePipeline do
 
   defp unpipe_expression(term) when is_binary(term) do
     term
-    |> Code.string_to_quoted()
+    |> Code.string_to_quoted!()
     |> unpipe()
     |> Macro.to_string()
+    |> then(&{:ok, &1})
   end
 
   defp unpipe(ast) do
