@@ -21,8 +21,10 @@ defmodule ToggleMapKeys do
       iex> ToggleMapKeys.toggle_map_keys("%{\"foo\" => 1, \"bar\" => 2}")
       "%{foo: 1, bar: 2}"
   """
-  def toggle_map_keys(ast) when is_tuple(ast) do
-    case ast do
+  def main([arg]), do: main(arg)
+
+  def main(arg) when is_tuple(arg) do
+    case arg do
       {:%{}, meta, pairs} when is_list(pairs) and pairs != [] ->
         key_type = map_key_type(pairs)
 
@@ -32,13 +34,13 @@ defmodule ToggleMapKeys do
         {:%{}, meta, toggled_pairs}
 
       _ ->
-        Macro.prewalk(ast, &toggle_map_keys/1)
+        Macro.prewalk(arg, &toggle_map_keys/1)
     end
   end
 
-  def toggle_map_keys(term) when is_binary(term) do
+  def main(arg) when is_binary(arg) do
     try do
-      term
+      arg
       |> Code.string_to_quoted!()
       |> toggle_map_keys()
       |> Macro.to_string()

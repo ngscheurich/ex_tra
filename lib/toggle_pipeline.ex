@@ -1,12 +1,14 @@
 defmodule TogglePipeline do
-  def toggle_pipeline(term) when is_binary(term) do
+  def main([arg]), do: main(arg)
+
+  def main(arg) when is_binary(arg) do
     try do
-      ast = Code.string_to_quoted!(term)
+      ast = Code.string_to_quoted!(arg)
 
       if is_piped?(ast) do
-        unpipe_expression(term)
+        unpipe_expression(arg)
       else
-        pipe_expression(term)
+        pipe_expression(arg)
       end
     catch
       error -> {:error, "Failed: #{inspect(error)}"}

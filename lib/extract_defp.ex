@@ -4,7 +4,9 @@ defmodule ExtractDefp do
   variables (except module attributes) as arguments.
   """
 
-  def extract_defp(region) when is_binary(region) do
+  def main([arg]), do: main(arg)
+
+  def main(region) when is_binary(region) do
     try do
       args =
         region

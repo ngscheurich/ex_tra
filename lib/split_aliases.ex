@@ -3,12 +3,13 @@ defmodule SplitAliases do
   Splits multi-alias curly brace notation into single-line aliases.
 
   ## Examples
-  iex> split_aliases("alias Arcadia.Plug.Data.{Account, BillingStatement, Meter, Site}")
-  {:ok, "alias Arcadia.Plug.Data.Account\nalias Arcadia.Plug.Data.BillingStatement\nalias Arcadia.Plug.Data.Meter\nalias Arcadia.Plug.Data.Site"}
+
   """
 
-  def split_aliases(string) when is_binary(string) do
-    case Code.string_to_quoted(string) do
+  def main([arg]), do: main(arg)
+
+  def main(arg) when is_binary(arg) do
+    case Code.string_to_quoted(arg) do
       {:ok, ast} ->
         split_ast(ast)
         |> extract_aliases()
@@ -38,12 +39,7 @@ defmodule SplitAliases do
   end
 
   # Handles {:alias, meta, [dot_tuple_call]}
-  defp split_ast(
-         {:alias, meta,
-          [
-            {{:., _, [prefix_ast, :{}]}, _, inner_modules}
-          ]} = ast
-       ) do
+  defp split_ast({:alias, meta, [{{:., _, [prefix_ast, :{}]}, _, inner_modules}]}) do
     prefix = extract_prefix(prefix_ast)
 
     aliases =
@@ -58,28 +54,4 @@ defmodule SplitAliases do
   defp split_ast(ast), do: ast
 
   defp extract_prefix({:__aliases__, _, prefix}), do: prefix
-
-  defp build_aliases(meta, prefix, {:atoms__, _, [atom]}, rest) do
-    aliases = [atom] ++ extract_atoms(rest)
-
-    aliases =
-      Enum.map(aliases, fn atom ->
-        {:alias, meta, [{:__aliases__, [], [prefix, atom]}]}
-      end)
-      |> List.flatten()
-
-    {:__block__, [], aliases}
-  end
-
-  defp extract_atoms([]), do: []
-
-  defp extract_atoms([{:{}, _meta, elements} | tail]) do
-    atoms =
-      Enum.map(elements, fn
-        {:atoms__, _, [atom]} -> atom
-        other -> other
-      end)
-
-    atoms ++ extract_atoms(tail)
-  end
 end

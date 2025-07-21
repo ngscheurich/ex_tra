@@ -9,11 +9,22 @@ defmodule ToggleStringConcat do
   Toggle string concatenation/interpolation in the code string.
   Returns {:ok, new_code_string} or {:error, reason}
 
-    iex> ToggleStringConcat.toggle_string_concat(~s{"foo " <> bar <> " baz"})
-    {:ok, "\"foo \#{bar} baz\""}
+  ## Examples
+
+  iex> ToggleStringConcat.toggle_string_concat("foo " <> bar <> " baz")
+  {:ok, "\"foo \#{bar} baz\""}
+
+  iex> ToggleStringConcat.toggle_string_concat("foo \#{bar} baz")
+  {:ok, "foo " <> bar <> " baz"}
+
+  iex> ToggleStringConcat.toggle_string_concat("plain string")
+  {:ok, "plain string"}
   """
-  def toggle_string_concat(code) when is_binary(code) do
-    code = unescape_interpolation_literal(code)
+
+  def main([arg]), do: main(arg)
+
+  def toggle_string_concat(arg) when is_binary(arg) do
+    code = unescape_interpolation_literal(arg)
 
     with {:ok, ast} <- Code.string_to_quoted(code) do
       cond do
