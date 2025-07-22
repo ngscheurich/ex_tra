@@ -4,6 +4,11 @@ defmodule SplitAliases do
 
   ## Examples
 
+      iex> SplitAliases.main("alias Foo.{\\nBar.Baz,\\nQuux\\n}")
+      {:ok, "alias Foo.Bar.Baz\\nalias Foo.Quux"}
+
+      iex> SplitAliases.main("alias GridPoint.Savings.Data.{\\n    BillingCycleMeasurement,\\n    BillingStatementCharge,\\n    BillingStatementUsage,\\n    RegressionModel\\n  }")
+      {:ok, "alias GridPoint.Savings.Data.BillingCycleMeasurement\\nalias GridPoint.Savings.Data.BillingStatementCharge\\nalias GridPoint.Savings.Data.BillingStatementUsage\\nalias GridPoint.Savings.Data.RegressionModel"}
   """
 
   def main([arg]), do: main(arg)

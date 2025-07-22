@@ -13,6 +13,12 @@ defmodule Extra do
   """
   @spec main(list()) :: {:ok, term()} | {:error, term()}
   def main([command | args]) do
+    args =
+      case args do
+        [arg] -> arg
+        _ -> args
+      end
+
     command
     |> case do
       "extract_defp" -> ExtractDefp.main(args)

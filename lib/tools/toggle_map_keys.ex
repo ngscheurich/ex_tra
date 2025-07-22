@@ -9,40 +9,38 @@ defmodule ToggleMapKeys do
   Takes Elixir code (as string or AST). If the topmost map node's keys are atoms, converts to strings;
   if the topmost map node's keys are strings, converts to atoms.
 
-      iex> ToggleMapKeys.toggle_map_keys(quote do: %{foo: 1, bar: %{baz: 2}})
-      {:%{}, [], [{"foo", 1}, {"bar", {:%{}, [], [{"baz", 2}]}}]}
+      iex> ToggleMapKeys.main("%{foo: 1, bar: 2}")
+      {:ok, "%{\\"foo\\" => 1, \\"bar\\" => 2}"}
 
-      iex> ToggleMapKeys.toggle_map_keys(quote do: %{"foo" => 1, "bar" => %{"baz" => 2}})
-      {:%{}, [], [{:foo, 1}, {:bar, {:%{}, [], [{:baz, 2}]}}]}
+      iex> ToggleMapKeys.main("%{\\"foo\\" => 1, \\"bar\\" => 2}")
+      {:ok, "%{foo: 1, bar: 2}"}
 
-      iex> ToggleMapKeys.toggle_map_keys("%{foo: 1, bar: 2}")
-      "%{"foo" => 1, "bar" => 2}"
+      # Variable in scope, only literal map keys toggle
+      iex> ToggleMapKeys.main("%{foo: %{bar: 2, baz: [1, 2]}, static: foo}")
+      {:ok, "%{\\"foo\\" => %{\\"bar\\" => 2, \\"baz\\" => [1, 2]}, \\"static\\" => foo}"}
 
-      iex> ToggleMapKeys.toggle_map_keys("%{\"foo\" => 1, \"bar\" => 2}")
-      "%{foo: 1, bar: 2}"
   """
-  def main([arg]), do: main(arg)
-
-  def main(arg) when is_tuple(arg) do
-    case arg do
+  def main(ast) when is_tuple(ast) do
+    case ast do
       {:%{}, meta, pairs} when is_list(pairs) and pairs != [] ->
         key_type = map_key_type(pairs)
 
         toggled_pairs =
-          Enum.map(pairs, fn {k, v} -> {toggle_key(k, key_type), toggle_map_keys(v)} end)
+          Enum.map(pairs, fn {k, v} -> {toggle_key(k, key_type), main(v)} end)
 
         {:%{}, meta, toggled_pairs}
 
       _ ->
-        Macro.prewalk(arg, &toggle_map_keys/1)
+        # Return non-map tuples as-is instead of Macro.prewalk to avoid recursion
+        ast
     end
   end
 
-  def main(arg) when is_binary(arg) do
+  def main(term) when is_binary(term) do
     try do
-      arg
+      term
       |> Code.string_to_quoted!()
-      |> toggle_map_keys()
+      |> main()
       |> Macro.to_string()
       |> then(&{:ok, &1})
     rescue
@@ -50,14 +48,14 @@ defmodule ToggleMapKeys do
     end
   end
 
-  def toggle_map_keys(term) when is_map(term) and map_size(term) > 0 do
+  def main(term) when is_map(term) and map_size(term) > 0 do
     key_type = map_key_type(Map.to_list(term))
-    Map.new(term, fn {k, v} -> {toggle_key(k, key_type), toggle_map_keys(v)} end)
+    Map.new(term, fn {k, v} -> {toggle_key(k, key_type), main(v)} end)
   end
 
-  def toggle_map_keys(term) when is_map(term), do: term
-  def toggle_map_keys([head | tail]), do: [toggle_map_keys(head) | toggle_map_keys(tail)]
-  def toggle_map_keys(term), do: term
+  def main(term) when is_map(term), do: term
+  def main([head | tail]), do: [main(head) | main(tail)]
+  def main(term), do: term
 
   defp toggle_key(k, :atom) when is_atom(k), do: Atom.to_string(k)
   defp toggle_key(k, :string) when is_binary(k), do: String.to_atom(k)

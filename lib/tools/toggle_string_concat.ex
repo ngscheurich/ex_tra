@@ -11,19 +11,13 @@ defmodule ToggleStringConcat do
 
   ## Examples
 
-  iex> ToggleStringConcat.toggle_string_concat("foo " <> bar <> " baz")
-  {:ok, "\"foo \#{bar} baz\""}
-
-  iex> ToggleStringConcat.toggle_string_concat("foo \#{bar} baz")
-  {:ok, "foo " <> bar <> " baz"}
-
-  iex> ToggleStringConcat.toggle_string_concat("plain string")
+  iex> ToggleStringConcat.main("plain string")
   {:ok, "plain string"}
   """
 
   def main([arg]), do: main(arg)
 
-  def toggle_string_concat(arg) when is_binary(arg) do
+  def main(arg) when is_binary(arg) do
     code = unescape_interpolation_literal(arg)
 
     with {:ok, ast} <- Code.string_to_quoted(code) do

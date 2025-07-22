@@ -22,21 +22,14 @@
               scripts))))
 
 (defun elixir-transform-escape-region (s)
-  "Escape S for embedding as a double-quoted Elixir string literal, per https://hexdocs.pm/elixir/String.html#module-escape-characters."
-  (let* ((table '(("\"" . "\\\"")
-                  ("\\" . "\\\\")
-                  ("\n" . "\\n")
-                  ("\t" . "\\t")
-                  ("\r" . "\\r")
-                  ("\v" . "\\v")
-                  ("\b" . "\\b")
-                  ("\f" . "\\f")))
-         (escaped (replace-regexp-in-string
-                   "[\"\\\n\t\r\v\b\f]"
-                   (lambda (m) (cdr (assoc m table)))
-                   s t t)))
-    (setq escaped (replace-regexp-in-string "#{" "\\#{" escaped t t))
-    (format "\"%s\"" escaped)))
+  "Escape S for embedding as a double-quoted Elixir string literal."
+  (replace-regexp-in-string
+   "#{" "\\#{"
+   (replace-regexp-in-string
+    "\"" "\\\\\""
+    (replace-regexp-in-string
+     "\\\\" "\\\\\\\\"
+     s))))
 
 (defun elixir-transform-clean-string (input)
   "Cleans INPUT by replacing escaped characters, trimming leading newlines, and removing surrounding quotes."
@@ -63,7 +56,7 @@
            (function-name (cdr script-pair))
            (region-str (buffer-substring-no-properties (region-beginning) (region-end)))
            (region-elixir-str (elixir-transform-escape-region region-str))
-           (cmd (format "%s %s %s" elixir-transform-extra-bin function-name region-elixir-str))
+           (cmd (format "%s %s \"%s\"" elixir-transform-extra-bin function-name region-elixir-str))
            (start (region-beginning))
            (end (region-end))
            (orig-buf (current-buffer))
