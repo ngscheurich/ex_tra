@@ -21,3 +21,6 @@ elixir_transforms-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+vscode/node_modules/
+vscode/out

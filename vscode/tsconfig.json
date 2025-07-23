@@ -1,0 +1,18 @@
+{
+	"compilerOptions": {
+		"module": "Node16",
+		"target": "ES2022",
+		"outDir": "out",
+		"lib": [
+			"ES2022"
+		],
+		"sourceMap": true,
+		"rootDir": "src",
+		"strict": true,
+	        "types": ["mocha", "node", "vscode"],
+		"esModuleInterop": true,     /* Provides interop between CommonJS and ES Modules */
+		"skipLibCheck": true         /* Skip type definition file checking */
+	},
+	"include": ["src"],             /* Ensure only 'src' is compiled */
+	"exclude": ["node_modules", "out"] /* Prevent checking these directories */
+}
