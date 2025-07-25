@@ -17,17 +17,14 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        const fs = require('fs');
-        const toolDir = path.resolve(__dirname, '../../lib/tools');
-
+        const binaryPath = path.resolve(__dirname, '../../extra');
         let commands: string[] = [];
         try {
-            commands = fs
-                .readdirSync(toolDir)
-                .filter((file: string) => file.endsWith('.ex'))
-                .map((file: string) => path.basename(file, '.ex'));
+            const result = childProcess.spawnSync(binaryPath, ['list_transforms'], { encoding: 'utf8' });
+            if (result.error) {throw result.error;}
+            commands = result.stdout.trim().split(/,\s*/).filter(Boolean);
         } catch (error) {
-            vscode.window.showErrorMessage(`Failed to load commands: ${(error as Error).message}`);
+            vscode.window.showErrorMessage(`Failed to load transform commands: ${(error as Error).message}`);
         }
 
         const transformFunction = await vscode.window.showQuickPick(commands, {
@@ -48,7 +45,6 @@ export function activate(context: vscode.ExtensionContext) {
         };
 
         const escapedInput = escapeElixirString(selectedText);
-        const binaryPath = path.resolve(__dirname, '../../extra');
         const result = childProcess.spawnSync(binaryPath, [transformFunction, escapedInput], { encoding: 'utf8' });
         const rawOutput = result.stdout;
 

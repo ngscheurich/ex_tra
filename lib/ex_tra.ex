@@ -1,36 +1,43 @@
 defmodule ExTra do
   @moduledoc """
-  ExTra (Elixir Transforms) is a CLI tool that provides refactoring tools for
+  ExTra (Elixir Transforms) is a CLI tool that provides refactoring transforms for
   working with Elixir. This module is compiled into an executable binary that
-  can be called with a command and args from the CLI.
+  can be called with a transform and args from the CLI.
   """
+
+  @transforms Application.compile_env(:ex_tra, :transforms)
 
   @doc """
-  The main function for escript to compile into an executable.
-
-  Takes a list where the first element is a command and subsequent elements are
-  args to be passed to that command.
+  Takes a list where the first element is a transform and subsequent elements are
+  args to be passed to that transform.
   """
   @spec main(list()) :: {:ok, term()} | {:error, term()}
-  def main([command | args]) do
-    args =
-      case args do
-        [arg] -> arg
-        _ -> args
-      end
+  def main(["list_transforms"]) do
+    @transforms
+    |> Map.keys()
+    |> Enum.join(", ")
+    |> IO.puts()
 
-    command
+    :ok
+  end
+
+  def main([transform | args]) do
+    @transforms
+    |> Map.get(transform)
     |> case do
-      "extract_defp" -> ExtractDefp.main(args)
-      "split_aliases" -> SplitAliases.main(args)
-      "toggle_map_keys" -> ToggleMapKeys.main(args)
-      "toggle_pipeline" -> TogglePipeline.main(args)
-      "toggle_string_concat" -> ToggleStringConcat.main(args)
-      _ -> {:error, "Unknown command"}
+      nil ->
+        {:error, "Unknown transform, try list_transforms to see options."}
+
+      mod ->
+        try do
+          apply(Module.concat([mod]), :main, args)
+        rescue
+          err -> {:error, Exception.message(err)}
+        end
     end
     |> case do
-      {:ok, result} -> IO.puts(result)
-      {:error, reason} -> IO.puts("Failed with: #{inspect(reason)}")
+      {:ok, val} -> IO.puts(val)
+      {:error, reason} -> IO.puts("Error: #{inspect(reason)}")
     end
   end
 end
