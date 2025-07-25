@@ -1,21 +1,16 @@
 # ExTra
 
-**Elixir Transforms for refactoring.**
+Elixir Transforms for easy refactoring.
 
-## Installation
+## Emacs
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `ex_tra` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:ex_tra, "~> 0.1.0"}
-  ]
-end
+```emacs-lisp
+  (use-package elixir-transform
+    :bind (("C-c t t" . elixir-transform))
+    :straight (elixir-transform
+               :type git
+               :host github
+               :repo "jasonmj/ex_tra"
+               :files ("elixir-transform.el" "extra")))
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/ex_tra>.
 
