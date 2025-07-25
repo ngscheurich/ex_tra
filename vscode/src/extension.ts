@@ -17,7 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        const binaryPath = path.resolve(__dirname, '../../extra');
+        const binaryPath = path.resolve(__dirname, './extra');
         let commands: string[] = [];
         try {
             const result = childProcess.spawnSync(binaryPath, ['list_transforms'], { encoding: 'utf8' });

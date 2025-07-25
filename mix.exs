@@ -4,6 +4,7 @@ defmodule ExTra.MixProject do
   def project do
     [
       app: :ex_tra,
+      aliases: [build: ["escript.build", "cmd cp extra vscode/out"]],
       version: "0.1.0",
       elixir: "~> 1.17",
       elixirc_paths: if(Mix.env() == :test, do: ["lib", "test/support"], else: ["lib"]),
