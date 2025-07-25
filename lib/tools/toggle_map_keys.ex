@@ -31,7 +31,6 @@ defmodule ToggleMapKeys do
         {:%{}, meta, toggled_pairs}
 
       _ ->
-        # Return non-map tuples as-is instead of Macro.prewalk to avoid recursion
         ast
     end
   end

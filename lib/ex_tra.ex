@@ -1,6 +1,6 @@
-defmodule Extra do
+defmodule ExTra do
   @moduledoc """
-  Extra (Elixir Transforms) is a CLI tool that provides refactoring tools for
+  ExTra (Elixir Transforms) is a CLI tool that provides refactoring tools for
   working with Elixir. This module is compiled into an executable binary that
   can be called with a command and args from the CLI.
   """

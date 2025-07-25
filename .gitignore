@@ -24,3 +24,5 @@ elixir_transforms-*.tar
 
 vscode/node_modules/
 vscode/out
+
+.lexical/

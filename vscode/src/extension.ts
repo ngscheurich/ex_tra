@@ -17,8 +17,6 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        console.log(`Current directory: ${__dirname}`);
-
         const fs = require('fs');
         const toolDir = path.resolve(__dirname, '../../lib/tools');
 
@@ -43,18 +41,13 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         const escapeElixirString = (input: string): string => {
-            // Important: escape backslashes first
             let result = input.replace(/\\/g, "\\\\");
-            // Then escape double quotes
             result = result.replace(/"/g, '\\"');
-            // Then protect interpolation patterns
             result = result.replace(/#\{/g, '\\#{');
             return result;
         };
 
         const escapedInput = escapeElixirString(selectedText);
-
-        // Hardcoded relative path to `extra`
         const binaryPath = path.resolve(__dirname, '../../extra');
         const result = childProcess.spawnSync(binaryPath, [transformFunction, escapedInput], { encoding: 'utf8' });
         const rawOutput = result.stdout;
@@ -71,7 +64,6 @@ export function activate(context: vscode.ExtensionContext) {
             editBuilder.replace(selection, rawOutput.trim());
         }).then(success => {
             if (success) {
-                // Reindent just the affected lines
                 vscode.commands.executeCommand('editor.action.reindentlines');
             }
         });

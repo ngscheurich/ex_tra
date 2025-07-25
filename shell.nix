@@ -5,5 +5,5 @@ pkgs.mkShell {
     beam.packages.erlang.elixir
   ];
 
-  name = "extra";
+  name = "ex_tra";
 }

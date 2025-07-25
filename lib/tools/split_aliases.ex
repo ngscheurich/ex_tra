@@ -7,8 +7,8 @@ defmodule SplitAliases do
       iex> SplitAliases.main("alias Foo.{\\nBar.Baz,\\nQuux\\n}")
       {:ok, "alias Foo.Bar.Baz\\nalias Foo.Quux"}
 
-      iex> SplitAliases.main("alias GridPoint.Savings.Data.{\\n    BillingCycleMeasurement,\\n    BillingStatementCharge,\\n    BillingStatementUsage,\\n    RegressionModel\\n  }")
-      {:ok, "alias GridPoint.Savings.Data.BillingCycleMeasurement\\nalias GridPoint.Savings.Data.BillingStatementCharge\\nalias GridPoint.Savings.Data.BillingStatementUsage\\nalias GridPoint.Savings.Data.RegressionModel"}
+      iex> SplitAliases.main("alias MyApp.Stuff.Things.{\\n    One,\\n    Two,\\n    Three\\n  }")
+      {:ok, "alias MyApp.Stuff.Things.One\\nalias MyApp.Stuff.Things.Two\\nalias MyApp.Stuff.Things.Three"}
   """
 
   def main([arg]), do: main(arg)
@@ -39,11 +39,8 @@ defmodule SplitAliases do
     [alias_node]
   end
 
-  defp extract_aliases(_) do
-    []
-  end
+  defp extract_aliases(_), do: []
 
-  # Handles {:alias, meta, [dot_tuple_call]}
   defp split_ast({:alias, meta, [{{:., _, [prefix_ast, :{}]}, _, inner_modules}]}) do
     prefix = extract_prefix(prefix_ast)
 
@@ -55,7 +52,6 @@ defmodule SplitAliases do
     {:__block__, [], aliases}
   end
 
-  # fallback: for already split alias or anything else
   defp split_ast(ast), do: ast
 
   defp extract_prefix({:__aliases__, _, prefix}), do: prefix
