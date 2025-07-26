@@ -45,7 +45,9 @@ export function activate(context: vscode.ExtensionContext) {
         };
 
         const escapedInput = escapeElixirString(selectedText);
-        const result = childProcess.spawnSync(binaryPath, [transformFunction, escapedInput], { encoding: 'utf8' });
+        const quotedInput = `"${escapedInput}"`;
+        const cmd = `${binaryPath} ${transformFunction} ${quotedInput}`;
+        const result = childProcess.spawnSync(cmd, { shell: true, encoding: 'utf8' });
         const rawOutput = result.stdout;
 
         if (result.error) {

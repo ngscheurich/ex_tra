@@ -8,6 +8,4 @@ Elixir is recommended, but not required. There are no strict dependencies.
 
 ## Release Notes
 
-### 0.1.5
-
-Initial release.
+Just check github commits. I don't have time to maintain this. 
