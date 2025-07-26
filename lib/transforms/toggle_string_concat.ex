@@ -9,10 +9,8 @@ defmodule ToggleStringConcat do
   Toggle string concatenation/interpolation in the code string.
   Returns {:ok, new_code_string} or {:error, reason}
 
-  ## Examples
-
-  iex> ToggleStringConcat.main("plain string")
-  {:ok, "plain string"}
+  Since docstrings require special escaping, trying to include examples here or
+  doctests would only increase confusion.
   """
 
   def main([arg]), do: main(arg)
@@ -76,30 +74,55 @@ defmodule ToggleStringConcat do
   defp string_content_of(s) when is_binary(s), do: s
 
   defp interpolation_to_concat({:<<>>, _, parts}) do
-    concat_parts =
-      Enum.map(parts, fn
-        b when is_binary(b) -> {:string, b}
-        {:"::", _, [expr, {:binary, _, _}]} -> {:expr, unwrap_kernel_to_string(expr)}
-        other -> {:expr, unwrap_kernel_to_string(other)}
-      end)
-
     components =
-      Enum.map(concat_parts, fn
-        {:string, s} -> "\"" <> escape_string(s) <> "\""
-        {:expr, ast} -> Macro.to_string(ast)
+      Enum.map(parts, fn
+        b when is_binary(b) ->
+          "\"#{escape_string(b)}\""
+
+        # Handles cases like Kernel.to_string("bar") and un-nests nested interpolations
+        {:"::", _, [{{:., _, [Kernel, :to_string]}, _, [inner]}, {:binary, _, nil}]} ->
+          case inner do
+            {:<<>>, _, subparts} ->
+              interpolation_to_concat({:<<>>, [], subparts})
+            literal when is_binary(literal) ->
+              "\"#{escape_string(literal)}\""
+            sub ->
+              Macro.to_string(sub)
+          end
+
+        {:"::", _, [inner, {:binary, _, nil}]} ->
+          case inner do
+            {:<<>>, _, subparts} ->
+              interpolation_to_concat({:<<>>, [], subparts})
+            literal when is_binary(literal) ->
+              "\"#{escape_string(literal)}\""
+            sub ->
+              Macro.to_string(sub)
+          end
+
+        # Handles direct Kernel.to_string calls
+        {{:., _, [Kernel, :to_string]}, _, [inner]} ->
+          case inner do
+            {:<<>>, _, subparts} ->
+              interpolation_to_concat({:<<>>, [], subparts})
+            literal when is_binary(literal) ->
+              "\"#{escape_string(literal)}\""
+            sub ->
+              Macro.to_string(sub)
+          end
+
+        # Integer.to_string, Foo.bar, variable, etc.
+        {var, _m, _a} = ast when is_atom(var) ->
+          Macro.to_string(ast)
+        other ->
+          Macro.to_string(other)
       end)
+      |> List.flatten()
 
     Enum.join(components, " <> ")
   end
 
-  defp interpolation_to_concat(ast), do: ast
-
-  defp unwrap_kernel_to_string({{:., _, [{:__aliases__, _, [:Kernel]}, :to_string]}, _, [expr]}),
-    do: expr
-
-  defp unwrap_kernel_to_string({{:., _, [:Kernel, :to_string]}, _, [expr]}), do: expr
-  defp unwrap_kernel_to_string({{:., _, [Kernel, :to_string]}, _, [expr]}), do: expr
-  defp unwrap_kernel_to_string(expr), do: expr
+  defp interpolation_to_concat(ast), do: Macro.to_string(ast)
 
   defp escape_string(s) do
     s

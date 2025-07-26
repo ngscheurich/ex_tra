@@ -6,14 +6,11 @@
   "Path to the `extra` binary for executing Elixir transforms.")
 
 (defun elixir-transform-escape-region (s)
-  "Escape S for embedding as a double-quoted Elixir string literal."
-  (replace-regexp-in-string
-   "#{" "\\#{"
-   (replace-regexp-in-string
-    "\"" "\\\\\""
-    (replace-regexp-in-string
-     "\\\\" "\\\\\\\\"
-     s))))
+  "Escape S for embedding as a double-quoted Elixir string literal, with #{} interpolation disabled."
+  (let ((s (replace-regexp-in-string "\\\\" "\\\\\\\\" s)))
+    (setq s (replace-regexp-in-string "\"" "\\\\\"" s))
+    (setq s (replace-regexp-in-string "#{" "\\\\#{" s))
+    s))
 
 (defun elixir-transform-clean-string (input)
   "Cleans INPUT by replacing escaped characters, trimming leading newlines, and removing surrounding quotes."
