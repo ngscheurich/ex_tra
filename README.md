@@ -11,6 +11,52 @@ Elixir Transforms for easy refactoring.
                :type git
                :host github
                :repo "jasonmj/ex_tra"
-               :files ("elixir-transform.el" "extra")))
+               :files ("emacs/**")))
 ```
 
+## Vim
+
+### Installation
+
+Copy the entire `vim` directory into your `~/.vim/plugins/` directory, giving it the name `elixir-transform`:
+
+```sh
+cp -r vim ~/.vim/plugins/elixir-transform
+```
+
+You may need to adjust the path to the `extra` binary in your Vim configuration if it is not located in the default directory:
+
+```vim
+let g:elixir_transform_extra_bin = '~/.vim/plugins/elixir-transform/extra'
+```
+
+### Usage
+
+- Visually select the code to transform.
+- Press `<leader>tt` (default mapping) to launch the transform prompt.
+- Select a transform from the prompt (populated by `extra list_transforms`).
+- The transformed code will replace your selection.
+
+## VSCode
+
+### Installation
+
+The ExTra extension is published on the [Open VSX Registry](https://open-vsx.org/).  
+You can install it directly from there using your editor's extension manager, or with the command line:
+
+```sh
+# For VS Code (with open-vsx support) or VSCodium:
+codium --install-extension jasonmj.ex_tra
+```
+
+### Usage
+
+- Select the text you want to transform in an editor window.
+- Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P` on Mac) and run the command:  
+  `ExTra: Transform Selection`
+- You will be prompted to choose from available transform commands, as provided by the `extra list_transforms` command.
+- The selected transform will be run on your selection, and the result will replace the original code.
+
+---
+
+For more details or troubleshooting, see the respective `vscode/README.md` or comments inside the Vim plugin.
