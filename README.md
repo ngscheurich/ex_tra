@@ -2,6 +2,20 @@
 
 Elixir Transforms for easy refactoring.
 
+## Features
+
+### Split Multi-Aliases
+
+https://github.com/user-attachments/assets/94e0e76c-fd19-4754-a24e-6e54ae8a3302
+
+### Toggle Pipeline
+
+https://github.com/user-attachments/assets/4e28c695-f543-4c64-97d9-5137ecb0c60f
+
+### Toggle Map Keys
+
+https://github.com/user-attachments/assets/2f033cba-0648-41c3-9ddd-5a31c412fb7f
+
 ## Emacs
 
 ```emacs-lisp
