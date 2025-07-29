@@ -32,7 +32,7 @@ https://github.com/user-attachments/assets/2f033cba-0648-41c3-9ddd-5a31c412fb7f
 
 ### Installation
 
-Copy the entire `vim` directory into your `~/.vim/plugins/` directory, giving it the name `elixir-transform`:
+Copy the entire `vim` directory into your `~/.vim/plugin/` directory, giving it the name `elixir-transform`:
 
 ```sh
 cp -r vim ~/.vim/plugins/elixir-transform
