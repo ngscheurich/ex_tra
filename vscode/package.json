@@ -2,7 +2,7 @@
     "name": "elixir-transform",
     "displayName": "elixir-transform",
     "description": "Transform selected test using Elixir scripts",
-    "version": "0.1.7",
+    "version": "0.1.8",
     "publisher": "jasonmj",
     "engines": {
         "vscode": "^1.102.0"

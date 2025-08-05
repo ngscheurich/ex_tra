@@ -17,7 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        const binaryPath = path.resolve(__dirname, './extra');
+        const binaryPath = path.resolve(__dirname, './ex_tra');
         let commands: string[] = [];
         try {
             const result = childProcess.spawnSync(binaryPath, ['list_transforms'], { encoding: 'utf8' });
@@ -62,7 +62,13 @@ export function activate(context: vscode.ExtensionContext) {
             editBuilder.replace(selection, rawOutput.trim());
         }).then(success => {
             if (success) {
-                vscode.commands.executeCommand('editor.action.reindentlines');
+                // Reselect replaced lines
+                const newEnd = editor.selection.start.translate(0, rawOutput.trim().length);
+                const newSelection = new vscode.Selection(editor.selection.start, editor.selection.end);
+                editor.selection = newSelection;
+
+                // Only the selected (replaced) lines will be reindented
+                vscode.commands.executeCommand('editor.action.formatDocument');
             }
         });
     });

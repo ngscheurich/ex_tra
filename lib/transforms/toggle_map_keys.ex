@@ -1,66 +1,126 @@
 defmodule ToggleMapKeys do
   @moduledoc """
-  Toggles the keys of the topmost map in an AST or code string between atoms and strings.
-  If the topmost map has atom keys, converts to string keys. If it has string keys, converts to atom keys.
-  Works recursively within the topmost map.
+  Toggles the keys of maps in Elixir code or AST strings between atoms and strings,
+  preserving source formatting and newlines using Sourceror.
   """
 
   @doc """
-  Takes Elixir code (as string or AST). If the topmost map node's keys are atoms, converts to strings;
-  if the topmost map node's keys are strings, converts to atoms.
-
-      iex> ToggleMapKeys.main("%{foo: 1, bar: 2}")
-      {:ok, "%{\\"foo\\" => 1, \\"bar\\" => 2}"}
-
-      iex> ToggleMapKeys.main("%{\\"foo\\" => 1, \\"bar\\" => 2}")
-      {:ok, "%{foo: 1, bar: 2}"}
-
-      # Variable in scope, only literal map keys toggle
-      iex> ToggleMapKeys.main("%{foo: %{bar: 2, baz: [1, 2]}, static: foo}")
-      {:ok, "%{\\"foo\\" => %{\\"bar\\" => 2, \\"baz\\" => [1, 2]}, \\"static\\" => foo}"}
-
+  Takes Elixir code (as string) or AST. If the topmost map's keys are atoms, converts to string keys;
+  if the topmost map's keys are strings, converts to atom keys.
+  Preserves source formatting.
   """
+  def main(code) when is_binary(code) do
+    with {:ok, ast} <- Sourceror.parse_string(code) do
+      type = detect_map_key_type(ast)
+      toggled_ast = toggle_map_keys(ast, type)
+      {:ok, Sourceror.to_string(toggled_ast, locals_without_parens: [])}
+    else
+      _ -> {:error, "Could not parse code"}
+    end
+  end
+
   def main(ast) when is_tuple(ast) do
-    case ast do
-      {:%{}, meta, pairs} when is_list(pairs) and pairs != [] ->
-        key_type = map_key_type(pairs)
+    type = detect_map_key_type(ast)
+    toggled_ast = toggle_map_keys(ast, type)
 
-        toggled_pairs =
-          Enum.map(pairs, fn {k, v} -> {toggle_key(k, key_type), main(v)} end)
-
-        {:%{}, meta, toggled_pairs}
-
-      _ ->
-        ast
+    case Sourceror.to_string(toggled_ast, locals_without_parens: []) do
+      {:ok, str} -> {:ok, str}
+      _ -> {:error, "Could not stringify toggled ast"}
     end
   end
 
-  def main(term) when is_binary(term) do
-    try do
-      term
-      |> Code.string_to_quoted!()
-      |> main()
-      |> Macro.to_string()
-      |> then(&{:ok, &1})
-    rescue
-      error -> {:error, "Failed: #{inspect(error)}"}
-    end
-  end
-
-  def main(term) when is_map(term) and map_size(term) > 0 do
-    key_type = map_key_type(Map.to_list(term))
-    Map.new(term, fn {k, v} -> {toggle_key(k, key_type), main(v)} end)
-  end
-
-  def main(term) when is_map(term), do: term
-  def main([head | tail]), do: [main(head) | main(tail)]
   def main(term), do: term
 
-  defp toggle_key(k, :atom) when is_atom(k), do: Atom.to_string(k)
-  defp toggle_key(k, :string) when is_binary(k), do: String.to_atom(k)
-  defp toggle_key(k, _), do: k
+  defp detect_map_key_type({:%{}, _meta, pairs}) when is_list(pairs) and pairs != [] do
+    [{k, _} | _] = pairs
+    key = unwrap_key(k)
 
-  defp map_key_type([{k, _} | _]) when is_atom(k), do: :atom
-  defp map_key_type([{k, _} | _]) when is_binary(k), do: :string
-  defp map_key_type(_), do: :unknown
+    key_type =
+      cond do
+        is_atom(key) -> :atom
+        is_binary(key) -> :string
+        true -> :unknown
+      end
+
+    key_type
+  end
+
+  defp detect_map_key_type(_), do: :unknown
+
+  # Recursively extract the literal key out of Sourceror AST wrappers
+  defp unwrap_key({:__block__, _, [key]}), do: unwrap_key(key)
+
+  defp unwrap_key({:__block__, _, key}) when is_list(key) and length(key) == 1,
+    do: unwrap_key(hd(key))
+
+  defp unwrap_key(k), do: k
+
+  defp convert_key(k, :atom) do
+    val = unwrap_key(k)
+
+    cond do
+      is_binary(val) -> safe_string_to_atom(val)
+      is_atom(val) -> val
+      # unknown, leave as is
+      true -> val
+    end
+  end
+
+  defp convert_key(k, :string) do
+    val = unwrap_key(k)
+
+    cond do
+      is_atom(val) -> Atom.to_string(val)
+      is_binary(val) -> val
+      true -> val
+    end
+  end
+
+  defp convert_key(k, _), do: k
+
+  defp toggle_type(:atom), do: :string
+  defp toggle_type(:string), do: :atom
+  defp toggle_type(t), do: t
+
+  defp toggle_map_keys({:%{}, meta, pairs} = map_ast, _parent_type)
+       when is_list(pairs) and pairs != [] do
+    # For each map node, detect for itself
+    type = detect_map_key_type(map_ast)
+
+    toggled_pairs =
+      Enum.map(pairs, fn {k, v} ->
+        new_key = convert_key(k, toggle_type(type))
+        toggled_value = toggle_map_keys(v, type)
+        {new_key, toggled_value}
+      end)
+
+    result = {:%{}, meta, toggled_pairs}
+    result
+  end
+
+  defp toggle_map_keys({left, right}, type) when is_tuple(right) do
+    new_right = toggle_map_keys(right, type)
+
+    new_right =
+      case new_right do
+        {:ok, val} -> val
+        val -> val
+      end
+
+    {left, new_right}
+  end
+
+  defp toggle_map_keys(list, type) when is_list(list) do
+    Enum.map(list, &toggle_map_keys(&1, type))
+  end
+
+  defp toggle_map_keys(other, _type), do: other
+
+  defp safe_string_to_atom(s) when is_binary(s) do
+    try do
+      String.to_atom(s)
+    rescue
+      _ -> s
+    end
+  end
 end

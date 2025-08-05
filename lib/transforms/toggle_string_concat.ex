@@ -84,8 +84,10 @@ defmodule ToggleStringConcat do
           case inner do
             {:<<>>, _, subparts} ->
               interpolation_to_concat({:<<>>, [], subparts})
+
             literal when is_binary(literal) ->
               "\"#{escape_string(literal)}\""
+
             sub ->
               Macro.to_string(sub)
           end
@@ -94,8 +96,10 @@ defmodule ToggleStringConcat do
           case inner do
             {:<<>>, _, subparts} ->
               interpolation_to_concat({:<<>>, [], subparts})
+
             literal when is_binary(literal) ->
               "\"#{escape_string(literal)}\""
+
             sub ->
               Macro.to_string(sub)
           end
@@ -105,8 +109,10 @@ defmodule ToggleStringConcat do
           case inner do
             {:<<>>, _, subparts} ->
               interpolation_to_concat({:<<>>, [], subparts})
+
             literal when is_binary(literal) ->
               "\"#{escape_string(literal)}\""
+
             sub ->
               Macro.to_string(sub)
           end
@@ -114,6 +120,7 @@ defmodule ToggleStringConcat do
         # Integer.to_string, Foo.bar, variable, etc.
         {var, _m, _a} = ast when is_atom(var) ->
           Macro.to_string(ast)
+
         other ->
           Macro.to_string(other)
       end)
