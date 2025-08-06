@@ -1,43 +1,37 @@
 defmodule ToggleStringConcatTest do
   use ExUnit.Case
+  use ToggleTestHelper, module: ToggleStringConcat
 
-  test "converts concatenation to interpolation with string literals" do
-    assert ToggleStringConcat.main(~s|"foo" <> "bar"|) == {:ok, "\"foo#{"bar"}\""}
-  end
+  test "toggles concatenation and interpolation with a basic example" do
+    original = "\"foo\" <> bar"
+    expected = "\"foo\#{bar}\""
 
-  test "converts interpolation to concatenation with string literals" do
-    assert ToggleStringConcat.main(~S|"foo#{"bar"}"|) == {:ok, "\"foo\" <> \"bar\""}
+    assert_toggle(original, expected)
   end
 
   test "nested concatenation" do
-    assert ToggleStringConcat.main(~s|"a" <> ("b" <> "c")|) == {:ok, "\"abc\""}
-    assert ToggleStringConcat.main(~S|"a#{"b#{"c"}"}"|) == {:ok, "\"a\" <> \"b\" <> \"c\""}
-  end
+    original = "\"User: \#{name} (\#{\"\#{type}er\"}) from \#{String.upcase(place)}\""
 
-  test "mixed inputs" do
-    assert ToggleStringConcat.main(~s|"a" <> Integer.to_string(1)|) ==
-             {:ok, "\"a#\{Integer.to_string(1)\}\""}
+    expected =
+      "\"User: \" <> name <> \" (\" <> type <> \"er\" <> \") from \" <> String.upcase(place)"
 
-    assert ToggleStringConcat.main(~S|"a#{Integer.to_string(1)}"|) ==
-             {:ok, "\"a\" <> Integer.to_string(1)"}
-  end
+    # Removes the redundant interpolation
+    reversed = "\"User: \#{name} (\#{type}er) from \#{String.upcase(place)}\""
 
-  test "escape characters" do
-    assert ToggleStringConcat.main(~s|"a\nb" <> foo|) == {:ok, "\"a\nb\#{foo}\""}
-    assert ToggleStringConcat.main(~S|"a#{"b\n"}"|) == {:ok, "\"a\" <> \"b\\n\""}
+    assert_toggle(original, expected, reversed)
   end
 
   test "empty strings" do
-    assert ToggleStringConcat.main(~s|"" <> "a"|) == {:ok, "\"a\""}
-    assert ToggleStringConcat.main(~S|"#{""}bar"|) == {:ok, "\"\" <> \"bar\""}
-  end
+    original = "\"\" <> \"a\""
+    expected = "\"a\""
+    reversed = "\"a\""
 
-  test "complex interpolation" do
-    assert ToggleStringConcat.main(~S|"a#{"b#{"c"}"}"|) == {:ok, "\"a\" <> \"b\" <> \"c\""}
+    assert_toggle(original, expected, reversed)
   end
 
   test "noop for non-matching input" do
-    assert ToggleStringConcat.main("123 + 456") == {:ok, "123 + 456"}
+    original = "123 + 456"
+    assert_toggle(original, original)
   end
 
   test "error for invalid code" do
