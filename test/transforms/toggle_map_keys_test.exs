@@ -1,5 +1,6 @@
 defmodule ToggleMapKeysTest do
   use ExUnit.Case
+  use ToggleTestHelper, module: ToggleMapKeys
 
   test "toggles a basic map" do
     original = "%{\"hello\" => :world}"
@@ -20,12 +21,5 @@ defmodule ToggleMapKeysTest do
     expected = "%{\n  foo: :bar\n}"
 
     assert_toggle(original, expected)
-  end
-
-  defp assert_toggle(original, expected) do
-    toggled = ToggleMapKeys.main(original)
-
-    assert toggled == {:ok, expected}
-    assert toggled |> elem(1) |> ToggleMapKeys.main() == {:ok, original}
   end
 end

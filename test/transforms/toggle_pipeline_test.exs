@@ -1,5 +1,6 @@
 defmodule TogglePipelineTest do
   use ExUnit.Case
+  use ToggleTestHelper, module: TogglePipeline
 
   test "toggles an empty pipeline" do
     original = ""
@@ -42,14 +43,5 @@ defmodule TogglePipelineTest do
     reversed = ":foo |> bar() |> baz()"
 
     assert_toggle(original, expected, reversed)
-  end
-
-  defp assert_toggle(original, expected, reversed \\ nil) do
-    toggled = TogglePipeline.main(original)
-
-    assert toggled == {:ok, expected}
-
-    assert toggled |> elem(1) |> TogglePipeline.main() ==
-             {:ok, if(is_nil(reversed), do: original, else: reversed)}
   end
 end
