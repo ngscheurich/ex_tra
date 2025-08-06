@@ -16,6 +16,10 @@ https://github.com/user-attachments/assets/4e28c695-f543-4c64-97d9-5137ecb0c60f
 
 https://github.com/user-attachments/assets/2f033cba-0648-41c3-9ddd-5a31c412fb7f
 
+### Toggle String Concat
+
+https://github.com/user-attachments/assets/c8fc776c-d009-443b-9889-b0566cb2bd41
+
 ## Emacs
 
 ```emacs-lisp
