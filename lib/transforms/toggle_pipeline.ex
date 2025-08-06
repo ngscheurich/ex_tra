@@ -1,4 +1,13 @@
 defmodule TogglePipeline do
+  @moduledoc """
+  Toggles Elixir pipeline expressions between piped and unpiped forms, preserving formatting and newlines using Sourceror.
+  """
+
+  @doc """
+  Takes Elixir code (as string) or AST. If the topmost expression is a pipeline, converts to unpiped form; else, converts to a pipeline.
+  Preserves source formatting.
+  """
+  @spec main(String.t() | atom() | list()) :: {:ok, String.t()} | {:error, String.t()}
   def main([arg]), do: main(arg)
 
   def main(arg) when is_binary(arg) do
