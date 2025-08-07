@@ -11,7 +11,7 @@ defmodule ExTra.MixProject do
           "cmd rm -rf ex_tra"
         ]
       ],
-      version: "0.1.0",
+      version: "0.2.0",
       elixir: "~> 1.17",
       elixirc_paths: if(Mix.env() == :test, do: ["lib", "test/support"], else: ["lib"]),
       escript: [main_module: ExTra, name: "ex_tra"],
