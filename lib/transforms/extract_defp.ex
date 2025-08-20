@@ -63,7 +63,7 @@ defmodule ExtractDefp do
 
         body_used = do_used_vars(block, inner_bound, MapSet.new())
         # Promote variables free in the lambda out to used set
-        MapSet.union(acc_used, MapSet.difference(body_used, inner_bound) |> MapSet.put(:z))
+        MapSet.union(acc_used, MapSet.difference(body_used, inner_bound))
 
       _, acc ->
         acc
