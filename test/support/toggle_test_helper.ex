@@ -10,7 +10,11 @@ defmodule ToggleTestHelper do
       defp assert_toggle(original, expected), do: assert_toggle(original, expected, original)
 
       defp assert_toggle(original, expected, reversed) do
-        assert {:ok, ^expected} = unquote(module).main(original)
+        original = String.trim(original)
+        expected = String.trim(expected)
+        reversed = String.trim(reversed)
+
+        assert {:ok, expected} == unquote(module).main(original)
         assert unquote(module).main(expected) == {:ok, reversed}
       end
     end

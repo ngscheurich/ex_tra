@@ -3,22 +3,37 @@ defmodule ToggleMapKeysTest do
   use ToggleTestHelper, module: ToggleMapKeys
 
   test "toggles a basic map" do
-    original = "%{\"hello\" => :world}"
-    expected = "%{hello: :world}"
+    original = ~s(
+    %{"hello" => :world}
+    )
+
+    expected = ~s(
+    %{hello: :world}
+    )
 
     assert_toggle(original, expected)
   end
 
   test "toggles a nested map" do
-    original = "%{\"hello\" => %{\"foo\" => :bar}}"
-    expected = "%{hello: %{foo: :bar}}"
+    original = ~s(
+    %{"hello" => %{"foo" => :bar}}
+    )
+
+    expected = ~s(
+    %{hello: %{foo: :bar}}
+    )
 
     assert_toggle(original, expected)
   end
 
   test "toggles a map with newlines " do
-    original = "%{\n  \"foo\" => :bar\n}"
-    expected = "%{\n  foo: :bar\n}"
+    original = ~s(%{
+  "foo" => :bar
+})
+
+    expected = ~s(%{
+  foo: :bar
+})
 
     assert_toggle(original, expected)
   end
