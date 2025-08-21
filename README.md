@@ -36,24 +36,22 @@ https://github.com/user-attachments/assets/c8fc776c-d009-443b-9889-b0566cb2bd41
 
 ### Installation
 
-Copy the entire `nvim/lua/ex_tra/` directory into your `~/.config/nvim/lua/` directory:
+Add the `nvim` directory to your `runtimepath`, in your `init.lua` for instance:
 
-```sh
-cp -r nvim/lua/ex_tra/ ~/.config/nvim/lua/
+```lua
+vim.opt.rtp:prepend("path/to/ex_tra/nvim")
 ```
 
-Add to `~/.config/nvim/init.lua`:
+The quickest way to get up and running is to load the plugin with global keymaps:
 
 ```vim
-require('ex_tra')
+require("ex_tra").set_keymaps()
 ```
 
-### Usage
+For more information on configuration and recommended usage, view the [help file](nvim/doc/ex_tra.txt) with `:help ex_tra`.
 
-- Visually select the code to transform.
-- Press `<leader>tt` (default mapping) to launch the transform prompt.
-- Select a transform from the prompt (populated by `ex_tra list_transforms`).
-- The transformed code will replace your selection.
+> [!TIP]
+> Run `:helptags ALL` to ensure the help tags file is available.
 
 ## VSCode
 
@@ -75,6 +73,4 @@ codium --install-extension jasonmj.ex_tra
 - You will be prompted to choose from available transform commands, as provided by the `ex_tra list_transforms` command.
 - The selected transform will be run on your selection, and the result will replace the original code.
 
----
-
-For more details or troubleshooting, see the respective `vscode/README.md` or comments inside the Vim plugin.
+For more details or troubleshooting, see the respective `vscode/README.md`.

@@ -1,0 +1,115 @@
+*ex_tra* Elixir Transforms for easy refactoring
+
+                                       Type |gO| to see the table of contents.
+
+==============================================================================
+1. Introduction                                          *ex_tra-introduction*
+
+Provides an interface between buffers and the `ex_tra` command-line tool.
+
+Features:
+
+  - Easily apply common refactoring actions to Elixir code.
+  - Choose from a list of transforms or specify one directly.
+  - Target code using visual selection or the current |treeesitter| node.
+  - Sensible keymaps that can be set on command.
+
+==============================================================================
+2. Configuration                                         *ex_tra-configuration*
+
+When the ex_tra module is loaded, configuration is read from a global table
+named `vim.g.ext_tra`, if it exists.
+
+Default values:
+
+  >lua
+  {
+    binary_path = vim.fn.expand("~/.config/nvim/lua/ex_tra/ex_tra"),
+    prompt = "Elixir Transform",
+    debug = false,
+  }
+<
+
+Options:
+
+  **binary_path**   Path at which the |ex_tra-binary| can be found.
+
+  **prompt**        |vim.ui.select()| prompt to display when choosing a
+                  transform.
+
+  **debug**         If true, ex_tra will raise errors, which can be useful for
+                  development. If false, instead display a user-friendly
+                  message with |vim.notify()|.
+
+==============================================================================
+3. Loading                                                     *ex_tra-keymaps*
+
+It is recommended to create an |autocommand| to load the plugin on-demand,
+e.g. for buffers with the `elixir` |filetype|.
+
+  >lua
+  vim.api.nvim_create_autocmd("FileType", {
+    desc = "Load ex_tra keymaps",
+    group = vim.api.nvim_create_augroup("ex_tra", {}),
+    pattern = "elixir",
+    callback = function(event)
+      require("ex_tra").set_keymaps(event.buf)
+    end,
+  })
+<
+
+==============================================================================
+4. Transforms                                              *ex_tra-transforms*
+
+The available transforms are driven by the |ex_tra-binary|:
+
+>
+ ┌───────────────────────┬─────────────────────────────┬─────────────────┐
+ │       Transform       │         Description         │ Default keymap  │
+ ├───────────────────────┼─────────────────────────────┼─────────────────┤
+ │ extract_defp          │ Extract private function    │ <LocalLeader>tx │
+ │ split_aliases         │ Split aliases               │ <LocalLeader>ta │
+ │ toggle_map_keys       │ Toggle map keys             │ <LocalLeader>tm │
+ │ toggle_pipeline       │ Toggle pipeline             │ <LocalLeader>tp │
+ │ toggle_string_concats │ Toggle string concatenation │ <LocalLeader>ts │
+ └───────────────────────┴─────────────────────────────┴─────────────────┘
+<
+
+==============================================================================
+5. ExTra binary
+
+This plugin works by leveraging the `ex_tra` binary, thus it is a hard
+dependency for this plugin. You can learn more at
+https://github.com/jasonmj/ex_tra.
+
+==============================================================================
+6. Public API                                                     *ex_tra-api*
+
+                                                *ex_tra.transform_selection()*
+transform_selection({transform})
+    Transforms the visually selected text. If {transform} is not provided, the
+    user will be prompted for a transform using |vim.ui.select()|.
+
+    Parameters: ~
+      • {transform}  (`string?`)
+
+                                                     *ex_tra.transform_node()*
+transform_node({transform})
+    Transforms the current |treeesitter| node or relevant ancestor. If
+    {transform} is not provided, the user will be prompted for a transform
+    using |vim.ui.select()|.
+
+    Parameters: ~
+      • {transform}  (`string?`) Transform to apply.
+
+                                                        *ex_tra.set_keymaps()*
+set_keymaps({bufnr}, {prefix})
+    Creates a set of keymaps to control ex_tra. If {bufnr} is provided, the
+    keymaps will be buffer-local. If {prefix} is provided, keymaps will be
+    created using it rather than the default (`<LocalLeader>t`).
+
+    Parameters: ~
+      • {bufnr}  (`integer?`) Buffer number. Optional.
+      • {prefix}  (`string`) Custom keymap prefix. Optional.
+
+vim:tw=78:ts=8:noet:ft=help:norl:
