@@ -7,7 +7,7 @@ defmodule ExTra.MixProject do
       aliases: [
         build: [
           "escript.build",
-          "cmd echo \"./emacs/ ./nvim/lua/ex_tra/ ./vscode/out/\" | xargs -n 1 cp -r ex_tra",
+          "cmd echo \"./emacs/ ./nvim/bin/ ./vscode/out/\" | xargs -n 1 cp -r ex_tra",
           "cmd rm -rf ex_tra"
         ]
       ],
