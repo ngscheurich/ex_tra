@@ -16,7 +16,6 @@ local M = {}
 
 ---@type ExTraConfig
 local default_config = {
-  binary_path = vim.fn.expand("~/.config/nvim/lua/ex_tra/ex_tra"),
   prompt = "Elixir Transform",
   debug = false,
 }
@@ -44,8 +43,14 @@ local function error_notify(msg, context, level)
   end
 end
 
+local function get_module_path()
+  local info = debug.getinfo(1, "S")
+  return info.source:match("^@(.+)")
+end
+
 if not config.binary_path then
-  error_notify("ex_tra binary path not set")
+  local module_path = get_module_path()
+  config.binary_path = vim.print(module_path .. "../../bin/ex_tra")
 end
 
 ---Makes a system call to the ex_tra binary with `arg`
@@ -232,15 +237,15 @@ function M.transform_node(transform)
 end
 
 ---Sets buffer-local keymaps using an optional prefix
----@param opts? {bufnr?: integer, prefix?: string}
+---@param opts? {buffer?: integer, prefix?: string}
 function M.set_keymaps(opts)
   local prefix = "<LocalLeader>t"
   local default_opts = {}
 
   if opts then
     prefix = opts.prefix or prefix
-    if opts.bufnr then
-      default_opts.bufnr = opts.bufnr
+    if opts.buffer then
+      default_opts.buffer = opts.buffer
     end
   end
 
